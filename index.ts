@@ -4,25 +4,18 @@ interface Guitar {
 }
 
 interface GuitarBuilder {
-  setModel(model: string): GuitarBuilder;
-  setSpecs(specs: string[]): GuitarBuilder;
+  createGuitar(): void;
   getResult(): Guitar;
 }
 
-class CustomGuitarBuilder implements GuitarBuilder {
+class StratocasterBuilder implements GuitarBuilder {
   private guitar: Guitar = {
-    model: "",
+    model: "Stratocaster",
     specs: [],
   };
 
-  setModel(model: string): GuitarBuilder {
-    this.guitar = {...this.guitar, model };
-    return this;
-  }
-
-  setSpecs(specs: string[]): GuitarBuilder {
-    this.guitar = {...this.guitar, specs }
-    return this;
+  createGuitar(): void {
+    this.guitar.specs.push("Rosewood Fretboard", "Maple Neck");
   }
 
   getResult(): Guitar {
@@ -30,21 +23,41 @@ class CustomGuitarBuilder implements GuitarBuilder {
   }
 }
 
-class GuitarFactory {
-  private static instance: GuitarFactory;
+class LesPaulBuilder implements GuitarBuilder {
+  private guitar: Guitar = {
+    model: "Les Paul",
+    specs: [],
+  };
+
+  createGuitar(): void {
+    this.guitar.specs.push("Rosewood Fretboard", "Mahogany Neck");
+  }
+
+  getResult(): Guitar {
+    return this.guitar;
+  }
+}
+
+interface GuitarFactory {
+  createGuitar(builder: GuitarBuilder): Guitar;
+  getInventory(): Guitar[];
+}
+
+class CustomGuitarFactory implements GuitarFactory {
+  private static instance: CustomGuitarFactory;
   private inventory: Guitar[] = [];
 
   private constructor() {}
 
-  static getInstance(): GuitarFactory {
+  static getInstance(): CustomGuitarFactory {
     if (!this.instance) {
-      this.instance = new GuitarFactory();
+      this.instance = new CustomGuitarFactory();
     }
     return this.instance;
   }
- 
 
   createGuitar(builder: GuitarBuilder): Guitar {
+    builder.createGuitar();
     const customGuitar = builder.getResult();
     this.inventory.push(customGuitar);
     return customGuitar;
@@ -55,13 +68,12 @@ class GuitarFactory {
   }
 }
 
-const strato = new CustomGuitarBuilder().setModel("Stratocaster").setSpecs(["Rosewood Fretboard", "Maple Neck"]);
-const lesPaul = new CustomGuitarBuilder().setModel("Les Paul").setSpecs(["Rosewood Fretboard", "Mahogany Neck"]);
+const stratoBuilder = new StratocasterBuilder();
+const lesPaulBuilder = new LesPaulBuilder();
 
-const factory = GuitarFactory.getInstance();
-factory.createGuitar(strato);
-const sameFactory = GuitarFactory.getInstance();
-sameFactory.createGuitar(lesPaul);
+const factory = CustomGuitarFactory.getInstance();
+factory.createGuitar(stratoBuilder);
+factory.createGuitar(lesPaulBuilder);
 
 const inventory = factory.getInventory();
 console.log("Inventory:", inventory);
